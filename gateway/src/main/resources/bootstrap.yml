@@ -1,0 +1,51 @@
+server:
+  port: 8066
+spring:
+  application:
+    name: gatewayserver
+  rabbitmq:
+    host: 192.168.1.66
+    port: 5672
+    username: guest
+    password: guest
+  cloud:
+    config:
+      fail-fast: true
+      name: configtest
+      profile: pro
+      label: master
+      discovery:
+        enabled: true
+        service-id: config-bus-server
+    bus:
+      trace:
+        enabled: true
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          # 服务名小写
+          lower-case-service-id: true
+          predicates:
+            path: /consumer/**
+      routes:
+        uri: lb://consumer-service # lb代表从注册中心获取服务，且已负载均衡方式转发
+        id: consumer-service
+      default-filters:
+        stripPrefix: 1 #加上StripPrefix=1，否则转发到后端服务时会带上consumer前缀
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://127.0.1.1:8006/eureka/
+  instance:
+    prefer-ip-address: true
+# 暴露监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
